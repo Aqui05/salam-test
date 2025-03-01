@@ -9,8 +9,7 @@ import authV2LoginMaskDark from '@images/pages/auth-v2-login-mask-dark.png'
 import authV2LoginMaskLight from '@images/pages/auth-v2-login-mask-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
-
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 definePage({
@@ -21,23 +20,29 @@ definePage({
 })
 
 const form = ref({
+  name: '',
   email: '',
   password: '',
-  remember: false,
+  confirmPassword: '',
 })
 
 const router = useRouter()
 
 const isPasswordVisible = ref(false)
+const isConfirmPasswordVisible = ref(false)
 
-// voir les erreurs dans le formulaire
-const errors = ref<{ email?: string; password?: string }>({})
+// Gestion des erreurs
+const errors = ref<{ name?: string; email?: string; password?: string; confirmPassword?: string }>({})
+
 const authV2LoginMask = useGenerateImageVariant(authV2LoginMaskLight, authV2LoginMaskDark)
-const authV2LoginIllustration = useGenerateImageVariant (authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
+const authV2LoginIllustration = useGenerateImageVariant(authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
 
-// validation du formulaire
-const validateForm = () => {
+// Validation dynamique des champs
+watch(form.value, () => {
   errors.value = {}
+
+  if (!form.value.name)
+    errors.value.name = 'Le nom est requis'
 
   if (!form.value.email)
     errors.value.email = 'L\'email est requis'
@@ -46,20 +51,23 @@ const validateForm = () => {
 
   if (!form.value.password)
     errors.value.password = 'Le mot de passe est requis'
+  else if (form.value.password.length < 6)
+    errors.value.password = 'Le mot de passe doit contenir au moins 6 caractères'
 
-  return Object.keys(errors.value).length === 0
-}
+  if (!form.value.confirmPassword)
+    errors.value.confirmPassword = 'Veuillez confirmer votre mot de passe'
+  else if (form.value.confirmPassword !== form.value.password)
+    errors.value.confirmPassword = 'Les mots de passe ne correspondent pas'
+})
 
-// connexion (simulée)
-const handleLogin = () => {
-  if (!validateForm())
+// Soumission du formulaire
+const handleRegister = () => {
+  if (Object.keys(errors.value).length > 0)
     return
 
-  // Simuler une connexion réussie et rediriger
+  // Simuler un enregistrement et rediriger
   localStorage.setItem('authToken', 'fake-jwt-token')
-
-  // rediriger vers le dashboard
-  router.push('/')
+  router.push('/') // Redirection vers la page de connexion après inscription
 }
 </script>
 
@@ -107,23 +115,30 @@ const handleLogin = () => {
       >
         <VCardText>
           <h4 class="text-h4 mb-1">
-            Welcome to <span class="text-capitalize">{{ themeConfig.app.title }}! 👋🏻</span>
+            Create an account on <span class="text-capitalize">{{ themeConfig.app.title }}! 🚀</span>
           </h4>
-
           <p class="mb-0">
-            Please sign-in to your account and start the adventure
+            Please fill in the details below to sign up.
           </p>
         </VCardText>
 
         <VCardText>
-          <!-- soumission : appel de la fonction handleLogin -->
-          <VForm @submit.prevent="handleLogin">
+          <VForm @submit.prevent="handleRegister">
             <VRow>
-              <!-- email -->
+              <!-- Nom -->
+              <VCol cols="12">
+                <VTextField
+                  v-model="form.name"
+                  label="Nom"
+                  placeholder="John Doe"
+                  :error-messages="errors.name"
+                />
+              </VCol>
+
+              <!-- Email -->
               <VCol cols="12">
                 <VTextField
                   v-model="form.email"
-                  autofocus
                   label="Email"
                   type="email"
                   placeholder="johndoe@email.com"
@@ -131,55 +146,53 @@ const handleLogin = () => {
                 />
               </VCol>
 
-              <!-- password -->
+              <!-- Mot de passe -->
               <VCol cols="12">
                 <VTextField
                   v-model="form.password"
-                  label="Password"
+                  label="Mot de passe"
                   placeholder="············"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
                   :error-messages="errors.password"
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
                 />
+              </VCol>
 
-                <!-- remember me checkbox -->
-                <div class="d-flex align-center justify-space-between flex-wrap my-6 gap-x-2">
-                  <VCheckbox
-                    v-model="form.remember"
-                    label="Remember me"
-                  />
+              <!-- Confirmation du mot de passe -->
+              <VCol cols="12">
+                <VTextField
+                  v-model="form.confirmPassword"
+                  label="Confirmer le mot de passe"
+                  placeholder="············"
+                  :type="isConfirmPasswordVisible ? 'text' : 'password'"
+                  :append-inner-icon="isConfirmPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
+                  :error-messages="errors.confirmPassword"
+                  @click:append-inner="isConfirmPasswordVisible = !isConfirmPasswordVisible"
+                />
+              </VCol>
 
-                  <a
-                    class="text-primary"
-                    href="javascript:void(0)"
-                  >
-                    Forgot Password?
-                  </a>
-                </div>
-
-                <!-- login button -->
+              <!-- Bouton S'inscrire -->
+              <VCol cols="12">
                 <VBtn
                   block
                   type="submit"
                 >
-                  Login
+                  S'inscrire
                 </VBtn>
               </VCol>
 
-              <!-- create account -->
+              <!-- Déjà un compte ? -->
               <VCol
                 cols="12"
                 class="text-body-1 text-center"
               >
-                <span class="d-inline-block">
-                  New on our platform?
-                </span>
+                <span class="d-inline-block">Vous avez déjà un compte ?</span>
                 <RouterLink
-                  to="inscription"
+                  to="/login"
                   class="text-primary ms-1 d-inline-block text-body-1"
                 >
-                  Create an account
+                  Se connecter
                 </RouterLink>
               </VCol>
 
@@ -192,7 +205,7 @@ const handleLogin = () => {
                 <VDivider />
               </VCol>
 
-              <!-- auth providers -->
+              <!-- Auth providers -->
               <VCol
                 cols="12"
                 class="text-center"
