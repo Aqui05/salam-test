@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useGenerateImageVariant } from '@/@core/composable/useGenerateImageVariant'
 import AuthProvider from '@/views/pages/authentication/AuthProvider.vue'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
@@ -9,8 +11,6 @@ import authV2LoginMaskDark from '@images/pages/auth-v2-login-mask-dark.png'
 import authV2LoginMaskLight from '@images/pages/auth-v2-login-mask-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
-import { ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
 
 definePage({
   meta: {
@@ -31,43 +31,125 @@ const router = useRouter()
 const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 
+// Track which fields have been touched
+const touchedFields = ref({
+  name: false,
+  email: false,
+  password: false,
+  confirmPassword: false,
+})
+
 // Gestion des erreurs
 const errors = ref<{ name?: string; email?: string; password?: string; confirmPassword?: string }>({})
 
 const authV2LoginMask = useGenerateImageVariant(authV2LoginMaskLight, authV2LoginMaskDark)
 const authV2LoginIllustration = useGenerateImageVariant(authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
 
-// Validation dynamique des champs
-watch(form.value, () => {
-  errors.value = {}
+// Validation functions for each field
+const validateName = () => {
+  if (!touchedFields.value.name)
+    return
 
   if (!form.value.name)
     errors.value.name = 'Le nom est requis'
+  else
+    errors.value.name = undefined
+}
+
+const validateEmail = () => {
+  if (!touchedFields.value.email)
+    return
 
   if (!form.value.email)
     errors.value.email = 'L\'email est requis'
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email))
     errors.value.email = 'Email invalide'
+  else
+    errors.value.email = undefined
+}
+
+const validateConfirmPassword = () => {
+  if (!touchedFields.value.confirmPassword)
+    return
+  if (!form.value.confirmPassword)
+    errors.value.confirmPassword = 'Veuillez confirmer votre mot de passe'
+  else if (form.value.confirmPassword !== form.value.password)
+    errors.value.confirmPassword = 'Les mots de passe ne correspondent pas'
+  else
+    errors.value.confirmPassword = undefined
+}
+
+const validatePassword = () => {
+  if (!touchedFields.value.password)
+    return
 
   if (!form.value.password)
     errors.value.password = 'Le mot de passe est requis'
   else if (form.value.password.length < 6)
     errors.value.password = 'Le mot de passe doit contenir au moins 6 caractères'
+  else
+    errors.value.password = undefined
 
-  if (!form.value.confirmPassword)
-    errors.value.confirmPassword = 'Veuillez confirmer votre mot de passe'
-  else if (form.value.confirmPassword !== form.value.password)
-    errors.value.confirmPassword = 'Les mots de passe ne correspondent pas'
-})
+  if (touchedFields.value.confirmPassword)
+    validateConfirmPassword()
+}
+
+// Function to mark field as touched and validate it
+const handleFieldInput = (field: 'name' | 'email' | 'password' | 'confirmPassword') => {
+  touchedFields.value[field] = true
+
+  switch (field) {
+    case 'name':
+      validateName()
+      break
+    case 'email':
+      validateEmail()
+      break
+    case 'password':
+      validatePassword()
+      break
+    case 'confirmPassword':
+      validateConfirmPassword()
+      break
+  }
+}
+
+// Validate all fields on form submission
+const validateAllFields = () => {
+  // Mark all fields as touched
+  Object.keys(touchedFields.value).forEach(key => {
+    touchedFields.value[key as keyof typeof touchedFields.value] = true
+  })
+
+  // Run all validations
+  validateName()
+  validateEmail()
+  validatePassword()
+  validateConfirmPassword()
+
+  // Return true if no errors
+  return !Object.values(errors.value).some(error => error !== undefined)
+}
 
 // Soumission du formulaire
 const handleRegister = () => {
-  if (Object.keys(errors.value).length > 0)
+  if (!validateAllFields())
     return
+
+  // Enregistrer les informations de l'utilisateur pour la page de profil
+  const userData = {
+    name: form.value.name,
+    email: form.value.email,
+  }
+
+  // Stocker les données utilisateur
+  localStorage.setItem('userData', JSON.stringify(userData))
 
   // Simuler un enregistrement et rediriger
   localStorage.setItem('authToken', 'fake-jwt-token')
-  router.push('/') // Redirection vers la page de connexion après inscription
+
+  // Redirection vers la page d'accueil après inscription
+  router.push('/')
 }
 </script>
 
@@ -132,6 +214,8 @@ const handleRegister = () => {
                   label="Nom"
                   placeholder="John Doe"
                   :error-messages="errors.name"
+                  @input="handleFieldInput('name')"
+                  @blur="handleFieldInput('name')"
                 />
               </VCol>
 
@@ -143,6 +227,8 @@ const handleRegister = () => {
                   type="email"
                   placeholder="johndoe@email.com"
                   :error-messages="errors.email"
+                  @input="handleFieldInput('email')"
+                  @blur="handleFieldInput('email')"
                 />
               </VCol>
 
@@ -155,6 +241,8 @@ const handleRegister = () => {
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
                   :error-messages="errors.password"
+                  @input="handleFieldInput('password')"
+                  @blur="handleFieldInput('password')"
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
                 />
               </VCol>
@@ -168,6 +256,8 @@ const handleRegister = () => {
                   :type="isConfirmPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isConfirmPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
                   :error-messages="errors.confirmPassword"
+                  @input="handleFieldInput('confirmPassword')"
+                  @blur="handleFieldInput('confirmPassword')"
                   @click:append-inner="isConfirmPasswordVisible = !isConfirmPasswordVisible"
                 />
               </VCol>

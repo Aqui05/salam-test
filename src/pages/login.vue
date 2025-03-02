@@ -30,35 +30,98 @@ const router = useRouter()
 
 const isPasswordVisible = ref(false)
 
+// Track which fields have been touched
+const touchedFields = ref({
+  email: false,
+  password: false,
+})
+
 // voir les erreurs dans le formulaire
 const errors = ref<{ email?: string; password?: string }>({})
 const authV2LoginMask = useGenerateImageVariant(authV2LoginMaskLight, authV2LoginMaskDark)
-const authV2LoginIllustration = useGenerateImageVariant (authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
+const authV2LoginIllustration = useGenerateImageVariant(authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
 
-// validation du formulaire
-const validateForm = () => {
-  errors.value = {}
-
+// Fonctions de validation pour chaque champ
+const validateEmail = () => {
+  if (!touchedFields.value.email) return
+  
   if (!form.value.email)
     errors.value.email = 'L\'email est requis'
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email))
     errors.value.email = 'Email invalide'
+  else
+    errors.value.email = undefined
+}
+
+const validatePassword = () => {
+  if (!touchedFields.value.password) return
 
   if (!form.value.password)
     errors.value.password = 'Le mot de passe est requis'
-
-  return Object.keys(errors.value).length === 0
+  else
+    errors.value.password = undefined
 }
 
-// connexion (simulée)
+// Function to mark field as touched and validate it
+const handleFieldInput = (field: 'email' | 'password') => {
+  touchedFields.value[field] = true
+  
+  if (field === 'email')
+    validateEmail()
+  else if (field === 'password')
+    validatePassword()
+}
+
+// Validate all fields on form submission
+const validateAllFields = () => {
+  // Mark all fields as touched
+  touchedFields.value.email = true
+  touchedFields.value.password = true
+  
+  // Run all validations
+  validateEmail()
+  validatePassword()
+  
+  // Return true if no errors
+  return !Object.values(errors.value).some(error => error !== undefined)
+}
+
+// Connexion (simulée)
 const handleLogin = () => {
-  if (!validateForm())
+  if (!validateAllFields())
     return
 
-  // Simuler une connexion réussie et rediriger
-  localStorage.setItem('authToken', 'fake-jwt-token')
+  // Récupérer les données utilisateur depuis le localStorage (si l'utilisateur s'est déjà inscrit)
+  let userData = null
+  try {
+    userData = JSON.parse(localStorage.getItem('userData') || '{}')
+  } catch (error) {
+    userData = {}
+  }
 
-  // rediriger vers le dashboard
+  // Vérifie si l'email du login correspond à celui de l'inscription
+  if (userData && userData.email === form.value.email) {
+    // L'utilisateur a été trouvé, utiliser ses informations existantes
+    // Mettre à jour la dernière connexion
+    userData.lastLogin = new Date().toISOString()
+    localStorage.setItem('userData', JSON.stringify(userData))
+  } else {
+    // L'utilisateur n'existe pas encore ou utilise un email différent
+    // Créer un profil minimal
+    const newUserData = {
+      email: form.value.email,
+      name: form.value.email.split('@')[0], // Nom d'utilisateur par défaut basé sur l'email
+      lastLogin: new Date().toISOString()
+    }
+    localStorage.setItem('userData', JSON.stringify(newUserData))
+  }
+
+  // Stocker les informations de connexion dans le localStorage
+  localStorage.setItem('authToken', 'fake-jwt-token')
+  localStorage.setItem('userEmail', form.value.email)
+  localStorage.setItem('rememberMe', JSON.stringify(form.value.remember))
+
+  // Redirection vers le dashboard
   router.push('/')
 }
 </script>
@@ -128,6 +191,8 @@ const handleLogin = () => {
                   type="email"
                   placeholder="johndoe@email.com"
                   :error-messages="errors.email"
+                  @input="handleFieldInput('email')"
+                  @blur="handleFieldInput('email')"
                 />
               </VCol>
 
@@ -140,6 +205,8 @@ const handleLogin = () => {
                   :type="isPasswordVisible ? 'text' : 'password'"
                   :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
                   :error-messages="errors.password"
+                  @input="handleFieldInput('password')"
+                  @blur="handleFieldInput('password')"
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
                 />
 
