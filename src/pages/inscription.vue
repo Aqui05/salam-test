@@ -137,20 +137,35 @@ const handleRegister = () => {
   if (!validateAllFields())
     return
 
-  // Enregistrer les informations de l'utilisateur (frontend)
-  const user = {
+  const newUser = {
     name: form.value.name,
     email: form.value.email,
     password: form.value.password,
   }
 
-  // Sauvegarde des infos en local
-  localStorage.setItem('user', JSON.stringify(user))
+  // Récupérer la liste existante des utilisateurs ou créer un tableau vide
+  const users = JSON.parse(localStorage.getItem('users') || '[]')
 
-  // Simuler une connexion
-  localStorage.setItem('authToken', 'fake-jwt-token')
+  // Vérifier si l'email existe déjà
+  if (users.some((user: { email: string }) => user.email === newUser.email)) {
+    errors.value.email = 'Cet email est déjà utilisé'
+
+    return
+  }
+
+  // Ajouter le nouvel utilisateur
+  users.push(newUser)
+
+  // Sauvegarder la liste mise à jour
+  localStorage.setItem('users', JSON.stringify(users))
+
+  // Stocker également l'utilisateur actuel pour la session
+
+  sessionStorage.setItem('currentUser', JSON.stringify(newUser))
+  sessionStorage.setItem('authToken', 'fake-jwt-token')
+
   router.push('/')
-  console.log('User registered:', user)
+  console.log('User registered:', newUser)
 }
 </script>
 

@@ -9,6 +9,7 @@ import { computed, onMounted, watchEffect } from 'vue'
 
 const { global } = useTheme()
 const router = useRouter()
+const route = useRoute()
 
 // ℹ️ Sync current theme with initial loader theme
 initCore()
@@ -18,10 +19,16 @@ const configStore = useConfigStore()
 
 // Ajouter cette fonction après la déclaration de watchEffect
 onMounted(() => {
-  // Vérification explicite lors du montage du composant
-  if (!localStorage.getItem('authToken') && router.currentRoute.value.path !== '/login'
-      && router.currentRoute.value.path !== '/inscription')
-    router.push('/login')
+  const isAuthenticated = sessionStorage.getItem('authToken')
+
+  if (!isAuthenticated) {
+    console.log('currentPath:', route.path) // ✅ Vérification du chemin correct
+
+    // Rediriger uniquement si l'utilisateur n'est pas sur une page d'authentification
+    if (route.path !== '/login' && route.path !== '/inscription') {
+      router.push('/login')
+    }
+  }
 })
 </script>
 

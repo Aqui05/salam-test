@@ -7,20 +7,22 @@ import { onMounted, ref } from 'vue'
 const router = useRouter()
 
 // Fonction pour déconnecter l'utilisateur
-
 const handleLogout = () => {
-  localStorage.removeItem('authToken')
+  sessionStorage.removeItem('authToken')
+  sessionStorage.removeItem('currentUser') // Supprime aussi l'utilisateur courant
   router.push('/login')
+
+  // Rafraîchir la page pour réinitialiser l'application
+  // location.reload()
 }
 
 // Variables réactives pour les informations utilisateur
 const userName = ref('John DOE')
-const userRole = ref('Admin')
 
 onMounted(() => {
   try {
-    // Récupérer les données utilisateur du localStorage
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}')
+    // Récupérer les données utilisateur depuis sessionStorage
+    const userData = JSON.parse(sessionStorage.getItem('currentUser') || '{}')
 
     // Mettre à jour le nom si disponible
     if (userData && userData.name)

@@ -93,22 +93,30 @@ const handleLogin = () => {
   if (!validateAllFields())
     return
 
-  const savedUser = JSON.parse(localStorage.getItem('user') || '{}')
+  // Récupérer tous les utilisateurs enregistrés
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
 
-  if (savedUser.email === form.value.email && savedUser.password === form.value.password) {
-    localStorage.setItem('authToken', 'fake-jwt-token')
+  // Rechercher l'utilisateur correspondant
+  const foundUser = users.find((user: { email: string; password: string }) =>
+    user.email === form.value.email && user.password === form.value.password,
+  )
+
+  if (foundUser) {
+    // Stocker l'utilisateur connecté en session
+    sessionStorage.setItem('currentUser', JSON.stringify(foundUser))
+    sessionStorage.setItem('authToken', 'fake-jwt-token')
+
+    // Redirection après connexion réussie
     router.push('/')
+    console.log('User logged in:', foundUser)
   }
   else {
-    // Créer un message d'erreur générique au lieu de l'attacher à un champ spécifique
+    // Afficher un message d'erreur global
     errors.value = {
-      ...errors.value,
+      email: '',
+      password: '',
       general: 'Email ou mot de passe incorrect',
     }
-
-    // Effacer les erreurs spécifiques pour éviter de mettre en surbrillance un champ particulier
-    errors.value.email = undefined
-    errors.value.password = undefined
   }
 }
 </script>
