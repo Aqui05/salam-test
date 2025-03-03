@@ -132,24 +132,25 @@ const validateAllFields = () => {
 }
 
 // Soumission du formulaire
+
 const handleRegister = () => {
   if (!validateAllFields())
     return
 
-  // Enregistrer les informations de l'utilisateur pour la page de profil
-  const userData = {
+  // Enregistrer les informations de l'utilisateur (frontend)
+  const user = {
     name: form.value.name,
     email: form.value.email,
+    password: form.value.password,
   }
 
-  // Stocker les données utilisateur
-  localStorage.setItem('userData', JSON.stringify(userData))
+  // Sauvegarde des infos en local
+  localStorage.setItem('user', JSON.stringify(user))
 
-  // Simuler un enregistrement et rediriger
+  // Simuler une connexion
   localStorage.setItem('authToken', 'fake-jwt-token')
-
-  // Redirection vers la page d'accueil après inscription
   router.push('/')
+  console.log('User registered:', user)
 }
 </script>
 

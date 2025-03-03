@@ -4,14 +4,25 @@ import ScrollToTop from '@core/components/ScrollToTop.vue'
 import initCore from '@core/initCore'
 import { initConfigStore, useConfigStore } from '@core/stores/config'
 import { hexToRgb } from '@core/utils/colorConverter'
+import { useRouter } from 'vue-router'
+import { computed, onMounted, watchEffect } from 'vue'
 
 const { global } = useTheme()
+const router = useRouter()
 
 // ℹ️ Sync current theme with initial loader theme
 initCore()
 initConfigStore()
 
 const configStore = useConfigStore()
+
+// Ajouter cette fonction après la déclaration de watchEffect
+onMounted(() => {
+  // Vérification explicite lors du montage du composant
+  if (!localStorage.getItem('authToken') && router.currentRoute.value.path !== '/login'
+      && router.currentRoute.value.path !== '/inscription')
+    router.push('/login')
+})
 </script>
 
 <template>

@@ -1,6 +1,35 @@
 <script setup lang="ts">
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar'
 import avatar1 from '@images/avatars/avatar-1.png'
+import { useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
+
+const router = useRouter()
+
+// Fonction pour déconnecter l'utilisateur
+
+const handleLogout = () => {
+  localStorage.removeItem('authToken')
+  router.push('/login')
+}
+
+// Variables réactives pour les informations utilisateur
+const userName = ref('John DOE')
+const userRole = ref('Admin')
+
+onMounted(() => {
+  try {
+    // Récupérer les données utilisateur du localStorage
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}')
+
+    // Mettre à jour le nom si disponible
+    if (userData && userData.name)
+      userName.value = userData.name
+  }
+  catch (error) {
+    console.error('Erreur lors du chargement des données utilisateur:', error)
+  }
+})
 
 const userProfileList = [
   { type: 'divider' },
@@ -71,7 +100,7 @@ const userProfileList = [
 
               <div>
                 <div class="text-body-2 font-weight-medium text-high-emphasis">
-                  John Doe
+                  {{ userName }}
                 </div>
                 <div class="text-capitalize text-caption text-disabled">
                   Admin
@@ -122,7 +151,7 @@ const userProfileList = [
                 color="error"
                 size="small"
                 append-icon="ri-logout-box-r-line"
-                :to="{ name: 'login' }"
+                @click="handleLogout"
               >
                 Logout
               </VBtn>
