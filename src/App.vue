@@ -5,39 +5,34 @@ import initCore from '@core/initCore'
 import { initConfigStore, useConfigStore } from '@core/stores/config'
 import { hexToRgb } from '@core/utils/colorConverter'
 import { useRouter } from 'vue-router'
-import { computed, onMounted, watchEffect } from 'vue'
+import { onMounted } from 'vue'
 
 const { global } = useTheme()
 const router = useRouter()
-const route = useRoute()
+const configStore = useConfigStore()
 
-// ℹ️ Sync current theme with initial loader theme
 initCore()
 initConfigStore()
 
-const configStore = useConfigStore()
-
-// Ajouter cette fonction après la déclaration de watchEffect
 onMounted(() => {
   const isAuthenticated = sessionStorage.getItem('authToken')
 
-  if (!isAuthenticated) {
-    console.log('currentPath:', route.path) // ✅ Vérification du chemin correct
+  const currentPath = window.location.pathname
 
+  console.log(currentPath)
+
+  if (!isAuthenticated) {
     // Rediriger uniquement si l'utilisateur n'est pas sur une page d'authentification
-    if (route.path !== '/login' && route.path !== '/inscription') {
+    if (currentPath !== '/login' && currentPath !== '/inscription')
       router.push('/login')
-    }
   }
 })
 </script>
 
 <template>
   <VLocaleProvider :rtl="configStore.isAppRTL">
-    <!-- ℹ️ This is required to set the background color of active nav link based on currently active global theme's primary -->
     <VApp :style="`--v-global-theme-primary: ${hexToRgb(global.current.value.colors.primary)}`">
       <RouterView />
-
       <ScrollToTop />
     </VApp>
   </VLocaleProvider>
