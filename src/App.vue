@@ -19,7 +19,7 @@ onMounted(() => {
 
   const currentPath = window.location.pathname
 
-  console.log(currentPath)
+  // console.log(currentPath)
 
   if (!isAuthenticated) {
     // Rediriger uniquement si l'utilisateur n'est pas sur une page d'authentification

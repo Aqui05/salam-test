@@ -19,6 +19,7 @@ definePage({
   },
 })
 
+// Définition du formulaire avec ses champs et valeurs initiales
 const form = ref({
   name: '',
   email: '',
@@ -45,7 +46,9 @@ const errors = ref<{ name?: string; email?: string; password?: string; confirmPa
 const authV2LoginMask = useGenerateImageVariant(authV2LoginMaskLight, authV2LoginMaskDark)
 const authV2LoginIllustration = useGenerateImageVariant(authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
 
-// Validation functions for each field
+// Validation pour chaque field
+
+// champ nom : obligatoire
 const validateName = () => {
   if (!touchedFields.value.name)
     return
@@ -56,6 +59,7 @@ const validateName = () => {
     errors.value.name = undefined
 }
 
+// champ email : obligatoire et format valide
 const validateEmail = () => {
   if (!touchedFields.value.email)
     return
@@ -68,6 +72,7 @@ const validateEmail = () => {
     errors.value.email = undefined
 }
 
+// champ mot de passe : obligatoire, longueur minimale de 6 caractères, et confirmation
 const validateConfirmPassword = () => {
   if (!touchedFields.value.confirmPassword)
     return
@@ -94,7 +99,7 @@ const validatePassword = () => {
     validateConfirmPassword()
 }
 
-// Function to mark field as touched and validate it
+// Fonction pour marquer un champ comme touché et le valider
 const handleFieldInput = (field: 'name' | 'email' | 'password' | 'confirmPassword') => {
   touchedFields.value[field] = true
 
@@ -114,14 +119,14 @@ const handleFieldInput = (field: 'name' | 'email' | 'password' | 'confirmPasswor
   }
 }
 
-// Validate all fields on form submission
+// Valider tous les champs
 const validateAllFields = () => {
   // Mark all fields as touched
   Object.keys(touchedFields.value).forEach(key => {
     touchedFields.value[key as keyof typeof touchedFields.value] = true
   })
 
-  // Run all validations
+  // exécuter toutes les validations
   validateName()
   validateEmail()
   validatePassword()
@@ -143,7 +148,7 @@ const handleRegister = () => {
     password: form.value.password,
   }
 
-  // Récupérer la liste existante des utilisateurs ou créer un tableau vide
+  // Récupérer la liste existante des utilisateurs ou créer un tableau vide d'utilisateur
   const users = JSON.parse(localStorage.getItem('users') || '[]')
 
   // Vérifier si l'email existe déjà
@@ -164,8 +169,10 @@ const handleRegister = () => {
   sessionStorage.setItem('currentUser', JSON.stringify(newUser))
   sessionStorage.setItem('authToken', 'fake-jwt-token')
 
+  // Rediriger vers la page d'accueil après l'inscription
   router.push('/')
-  console.log('User registered:', newUser)
+
+  // console.log('User registered:', newUser)
 }
 </script>
 

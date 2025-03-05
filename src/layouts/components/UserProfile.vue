@@ -9,11 +9,8 @@ const router = useRouter()
 // Fonction pour déconnecter l'utilisateur
 const handleLogout = () => {
   sessionStorage.removeItem('authToken')
-  sessionStorage.removeItem('currentUser') // Supprime aussi l'utilisateur courant
+  sessionStorage.removeItem('currentUser') // Supprime aussi l'utilisateur courant (la session)
   router.push('/login')
-
-  // Rafraîchir la page pour réinitialiser l'application
-  // location.reload()
 }
 
 // Variables réactives pour les informations utilisateur

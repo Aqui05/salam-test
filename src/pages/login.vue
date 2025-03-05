@@ -20,6 +20,7 @@ definePage({
   },
 })
 
+// Variables réactives pour le formulaire de connexion
 const form = ref({
   email: '',
   password: '',
@@ -30,7 +31,7 @@ const router = useRouter()
 
 const isPasswordVisible = ref(false)
 
-// Track which fields have been touched
+// Champs touchés pour la validation
 const touchedFields = ref({
   email: false,
   password: false,
@@ -43,7 +44,7 @@ const authV2LoginIllustration = useGenerateImageVariant(authV2LoginIllustrationL
 
 // Fonctions de validation pour chaque champ
 const validateEmail = () => {
-  if (!touchedFields.value.email) 
+  if (!touchedFields.value.email)
     return
 
   if (!form.value.email)
@@ -54,6 +55,7 @@ const validateEmail = () => {
     errors.value.email = undefined
 }
 
+// Fonction pour valider le mot de passe : obligatoire
 const validatePassword = () => {
   if (!touchedFields.value.password)
     return
@@ -64,7 +66,7 @@ const validatePassword = () => {
     errors.value.password = undefined
 }
 
-// Function to mark field as touched and validate it
+// Gérer l'entrée de champ pour la validation en temps réel
 const handleFieldInput = (field: 'email' | 'password') => {
   touchedFields.value[field] = true
 
@@ -74,17 +76,17 @@ const handleFieldInput = (field: 'email' | 'password') => {
     validatePassword()
 }
 
-// Validate all fields on form submission
+// Valider tous les champs du formulaire
 const validateAllFields = () => {
   // Mark all fields as touched
   touchedFields.value.email = true
   touchedFields.value.password = true
 
-  // Run all validations
+  // executer toutes les validations
   validateEmail()
   validatePassword()
 
-  // Return true if no errors
+  // Vérifier si des erreurs sont présentes
   return !Object.values(errors.value).some(error => error !== undefined)
 }
 
@@ -94,7 +96,7 @@ const handleLogin = () => {
     return
 
   // Récupérer tous les utilisateurs enregistrés
-  const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const users = JSON.parse(localStorage.getItem('users') || '[]')
 
   // Rechercher l'utilisateur correspondant
   const foundUser = users.find((user: { email: string; password: string }) =>
@@ -108,7 +110,8 @@ const handleLogin = () => {
 
     // Redirection après connexion réussie
     router.push('/')
-    console.log('User logged in:', foundUser)
+
+    // console.log('User logged in:', foundUser)
   }
   else {
     // Afficher un message d'erreur global
