@@ -29,7 +29,6 @@ pour démarrer le projet
 - Validation en temps réel des champs
 - Contrôle du format d'email
 - Vérification de la présence des champs
-- Regex pour validation d'email
 - Contrôle de la présence des champs
 - Gestion des champs "sélectionnés"
 
@@ -161,6 +160,7 @@ onMounted(() => {
 - Affichage du profile
 
 ### Logique de déconnexion
+
 Supprimer la session créer lors de la connexion et rediriger l'utilisateur vers la page de connexion
 
 ```typescript
@@ -174,7 +174,6 @@ const handleLogout = () => {
 ```
 
 ### Affichage du profil
-
 
 ```typescript
 onMounted(() => {
