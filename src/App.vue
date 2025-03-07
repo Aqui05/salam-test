@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useTheme } from 'vuetify'
 import ScrollToTop from '@core/components/ScrollToTop.vue'
 import initCore from '@core/initCore'
 import { initConfigStore, useConfigStore } from '@core/stores/config'
 import { hexToRgb } from '@core/utils/colorConverter'
-import { useRouter } from 'vue-router'
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useTheme } from 'vuetify'
 
 const { global } = useTheme()
 const router = useRouter()
@@ -16,6 +16,8 @@ initConfigStore()
 
 onMounted(() => {
   const isAuthenticated = sessionStorage.getItem('authToken')
+
+  // Récupérer le chemin actuel
 
   const currentPath = window.location.pathname
 

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useGenerateImageVariant } from '@/@core/composable/useGenerateImageVariant'
 import AuthProvider from '@/views/pages/authentication/AuthProvider.vue'
 import authV2LoginIllustrationBorderedDark from '@images/pages/auth-v2-login-illustration-bordered-dark.png'
@@ -11,6 +9,8 @@ import authV2LoginMaskDark from '@images/pages/auth-v2-login-mask-dark.png'
 import authV2LoginMaskLight from '@images/pages/auth-v2-login-mask-light.png'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 definePage({
   meta: {
@@ -32,7 +32,7 @@ const router = useRouter()
 const isPasswordVisible = ref(false)
 const isConfirmPasswordVisible = ref(false)
 
-// Track which fields have been touched
+// vérifier si les champs ont été touchés pour la validation
 const touchedFields = ref({
   name: false,
   email: false,
@@ -158,7 +158,7 @@ const handleRegister = () => {
     return
   }
 
-  // Ajouter le nouvel utilisateur
+  // Ajouter le nouvel utilisateur à la liste des utilisateurs
   users.push(newUser)
 
   // Sauvegarder la liste mise à jour
