@@ -191,4 +191,4 @@ onMounted(() => {
 })
 ```
 
-Récupéer les informations de l'utilisateur connecté dans le sessionStorage pour les affichées dans le composant.
+Récupérer les informations de l'utilisateur connecté dans le sessionStorage pour les affichées dans le composant.
